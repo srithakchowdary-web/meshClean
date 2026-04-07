@@ -102,6 +102,16 @@ def run_debugger(task):
         errors, root = run_hard()
 
     error_node = list(errors.keys())[0]
+    affected_nodes = ", ".join([n for n in ["A", "B", "C", "D"] if n not in [root, error_node]])
+    summary_text = (
+        f"🔴 Root Cause: Node {root}\n"
+        f"🟠 Affected Nodes: {affected_nodes or 'None'}\n"
+        f"⚠️ Total Errors: {len(errors)}"
+    )
+    suggestion_text = (
+        f"Suggestion: Resolve the issue at node {error_node} and verify schema consistency "
+        "across upstream transformations. Fix column name mismatch if present."
+    )
 
     steps = [
         ("Step 1: Inspect output node", error_node),
@@ -134,7 +144,9 @@ def run_debugger(task):
             logs,
             graph_img,
             agent_reasoning(error_node, root),
+            suggestion_text,
             rewards_text,
+            summary_text,
             f"Root Cause: {root}\nSteps Taken: {len(steps)}"
         )
 
@@ -145,12 +157,26 @@ def run_debugger(task):
 # -------------------------------
 
 with gr.Blocks(title="MeshClean Debugger") as demo:
+    css_styles = """
+        body { background-color: #f8fbff; color: #0f172a; }
+        .gradio-container { background-color: #f8fbff; color: #0f172a; }
+        .gradio-markdown { color: #0f172a; }
+        textarea, input, select { background-color: #ffffff !important; color: #0f172a !important; border-color: #2563eb !important; }
+        .gr-button { background-color: #2563eb !important; color: #ffffff !important; }
+        .gradio-image img { border: 1px solid #2563eb; }
+        .gr-block { background-color: #ffffff; }
+    """
 
     with gr.Row():
         
         # LEFT PANEL
         with gr.Column(scale=3):
-            gr.Markdown("## MeshClean Debugger")
+            gr.Markdown("# MeshClean Debugger")
+            gr.Markdown("### Technical Pipeline Error Investigator")
+
+            summary = gr.Markdown(
+                "🔴 Root Cause: -\n🟠 Affected Nodes: -\n⚠️ Total Errors: -"
+            )
 
             task = gr.Dropdown(
                 ["Easy", "Medium", "Hard"],
@@ -175,6 +201,9 @@ with gr.Blocks(title="MeshClean Debugger") as demo:
             gr.Markdown("### Agent Analysis")
             analysis = gr.Textbox(lines=6, interactive=False)
 
+            gr.Markdown("### Suggestion")
+            suggestion = gr.Textbox(lines=2, interactive=False)
+
             gr.Markdown("### Rewards Breakdown")
             rewards = gr.Markdown("No steps executed yet")
 
@@ -184,7 +213,17 @@ with gr.Blocks(title="MeshClean Debugger") as demo:
     run_btn.click(
         fn=run_debugger,
         inputs=task,
-        outputs=[error_box, progress, logs, graph, analysis, rewards, result]
+        outputs=[
+            error_box,
+            progress,
+            logs,
+            graph,
+            analysis,
+            suggestion,
+            rewards,
+            summary,
+            result,
+        ]
     )
 
-demo.launch()
+    demo.launch(css=css_styles)
