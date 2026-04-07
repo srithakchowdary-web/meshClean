@@ -1,0 +1,5 @@
+gradio
+networkx
+numpy
+pandas
+matplotlib
