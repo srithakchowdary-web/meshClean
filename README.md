@@ -1,10 +1,1 @@
-# MeshClean 🚀
-
-DAG-based AI mesh cleaning system with multi-agent pipeline and real-time UI.
-
-## Run
-
-docker build -t meshclean .
-docker run -p 7860:7860 meshclean
-
-Open: http://127.0.0.1:7865/
+A dynamic data pipeline debugging environment where an AI agent navigates a broken pipeline, traces errors upstream through a DAG, and identifies the true root cause of failure.MeshClean simulates realistic data pipeline failures. At every reset, a new error is randomly injected into the pipeline and propagated downstream — forcing the agent to reason through the problem rather than recall a memorized answer. A decoy error is also added in Hard mode to test whether the agent can distinguish real failures from misleading symptoms.
